@@ -1,3 +1,11 @@
+"""
+原始入口脚本（保留副本）。
+
+说明：
+- 该文件为原始实现；已创建重命名副本 `app.py`（功能相同），便于之后阅读和维护。
+- 我不会删除任何原始文档或笔记本；仅新增文件并添加说明。
+"""
+
 import geopandas as gpd
 import rasterio
 from rasterio.features import rasterize

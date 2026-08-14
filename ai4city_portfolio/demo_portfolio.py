@@ -5,6 +5,7 @@
 """
 
 import os
+import json
 from visual_tools import create_visualizer, create_metrics_calculator
 import torch
 
@@ -42,6 +43,22 @@ def main():
     print("计算得到的指标：")
     for k, v in metrics.items():
         print(f"  {k}: {v:.4f}")
+
+    # 保存指标为 JSON
+    metrics_path = os.path.join("portfolio_visuals", "metrics.json")
+    with open(metrics_path, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2, ensure_ascii=False)
+    print(f"已保存指标 JSON: {metrics_path}")
+
+    # 保存指标可视化
+    visualizer.visualize_metrics(metrics, title="作品集演示指标", save_path="portfolio_visuals/demo_metrics.png")
+    print("已保存指标可视化: portfolio_visuals/demo_metrics.png")
+
+    # 保存通道说明
+    channel_path = os.path.join("portfolio_visuals", "channel_names.json")
+    with open(channel_path, "w", encoding="utf-8") as f:
+        json.dump(visualizer.channel_names, f, indent=2, ensure_ascii=False)
+    print(f"已保存通道说明: {channel_path}")
 
 
 if __name__ == '__main__':

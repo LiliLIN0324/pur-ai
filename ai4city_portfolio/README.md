@@ -1,47 +1,111 @@
-AI4City — 作品集精简版
-
-这是从 AI4City_Urban_Regeneration 项目中提取的轻量演示代码，面向公开展示与作品集使用。该包体积小、可离线运行，便于在网页或演示中嵌入。
-
-本包内容
-- [demo_portfolio.py](demo_portfolio.py): 最小可运行的演示脚本，会生成一个合成的 8 通道张量，输出可视化图片并打印指标。
-- [visual_tools.py](visual_tools.py): 自包含的 `Visualizer` 与 `MetricsCalculator`，用于演示展示。
-- [requirements.txt](requirements.txt): 演示所需的最小依赖清单。
-
-快速开始（Windows）
-
-1. 创建并激活虚拟环境：
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
 ```
-
-2. 安装依赖：
-
-```powershell
-pip install -r requirements.txt
+AI4City_Urban_Regeneration/
+├── models/                              # 模型配置与权重
+│   ├── cldm_v15.yaml                    # 训练主配置（ControlNet/UNet/VAE/CLIP）
+│   ├── cldm_enhanced_urban.yaml         # 推理默认配置（hint_channels=6）
+│   ├── cldm_v15 copy.yaml               # 历史/备份配置（8通道尝试）
+│   └── control_sd15_ini.ckpt            # 需云盘下载（ControlNet预训练权重，5.3GB）
+├── configs/
+│   └── train_config.json                # 训练参数模板（可选）
+├── data/
+│   └── processed_tensors_8channels.pt   # 需云盘下载（原始8通道数据，7.6GB）
+├── enhanced_urban_data/
+│   ├── enhanced_urban_data.pt           # （当前不使用）需云盘下载（5通道处理数据，4.8GB）
+│   ├── visualization/
+│   │   └── sample_0_auxiliary_masks.png # 辅助通道可视化示例
+│   └── semantic_mask_sample_0.png       # 语义mask示例
+├── logs/                                # 训练日志与检查点（大文件，已在 .gitignore）
+│   ├── enhanced_urban_controlnet_with_prompt/
+│   │   ├── best_model_epoch=24_train_total_loss=0.0000.ckpt      # 最佳模型
+│   │   ├── enhanced_urban_controlnet_final.ckpt                  # 最终模型
+│   │   └── enhanced_urban_controlnet_logs/
+│   │       └── version_1/
+│   │           ├── events.out.tfevents.1755354544.pywang-gpu03   # TensorBoard事件
+│   │           └── hparams.yaml                                  # 训练超参
+│   └── enhanced_urban_controlnet_without_prompt/
+│       ├── best_model_epoch=00_train_total_loss=0.0000.ckpt      # 最佳模型
+│       └── enhanced_urban_controlnet_logs/
+│           └── version_0/
+│               ├── events.out.tfevents.1755349917.pywang-gpu03   # TensorBoard事件
+│               └── hparams.yaml                                  # 训练超参
+├── inference_results_single/
+│   ├── generated_urban_morphology.png   # 单张生成RGB
+│   ├── generated_mask.png               # 单张生成语义Mask
+│   ├── metrics_report.txt               # 指标对比报告
+│   └── metrics_comparison.png           # 指标对比可视化
+├── inference_results_batch/
+│   ├── batch_urban_morphology_grid.png  # 批量生成网格
+│   ├── batch_metrics_distribution.png   # 指标分布统计
+│   ├── batch_generation_report.txt      # 批量生成报告
+│   └── individual_images/
+│       ├── image_XXX.png                # 单张RGB
+│       └── mask_XXX.png                 # 对应语义Mask
+├── cldm/
+│   ├── cldm.py                          # ControlLDM 组装与入口
+│   ├── ddim_hacked.py                   # DDIM 采样相关改动
+│   ├── hack.py                          # 运行时调整/兼容辅助
+│   ├── logger.py                        # ImageLogger 封装
+│   └── model.py                         # create_model/load_state_dict
+├── ldm/                                 # Latent Diffusion Model 组件
+│   ├── data/
+│   │   ├── __init__.py
+│   │   └── util.py
+│   ├── models/
+│   │   ├── autoencoder.py               # VAE 定义
+│   │   └── diffusion/
+│   │       ├── __init__.py
+│   │       ├── ddim.py
+│   │       ├── ddpm.py
+│   │       ├── dpm_solver/
+│   │       │   ├── __init__.py
+│   │       │   ├── dpm_solver.py
+│   │       │   └── sampler.py
+│   │       ├── plms.py
+│   │       └── sampling_util.py
+│   ├── modules/
+│   │   ├── attention.py
+│   │   ├── diffusionmodules/
+│   │   │   ├── __init__.py
+│   │   │   ├── model.py
+│   │   │   ├── openaimodel.py
+│   │   │   ├── upscaling.py
+│   │   │   └── util.py
+│   │   ├── distributions/
+│   │   │   ├── __init__.py
+│   │   │   └── distributions.py
+│   │   ├── ema.py
+│   │   ├── encoders/
+│   │   │   ├── __init__.py
+│   │   │   └── modules.py
+│   │   ├── image_degradation/
+│   │   │   ├── __init__.py
+│   │   │   ├── bsrgan_light.py
+│   │   │   ├── bsrgan.py
+│   │   │   ├── utils/
+│   │   │   │   └── test.png
+│   │   │   └── utils_image.py
+│   │   └── midas/
+│   │       ├── __init__.py
+│   │       ├── api.py
+│   │       ├── midas/
+│   │       │   ├── __init__.py
+│   │       │   ├── base_model.py
+│   │       │   ├── blocks.py
+│   │       │   ├── dpt_depth.py
+│   │       │   ├── midas_net_custom.py
+│   │       │   ├── midas_net.py
+│   │       │   ├── transforms.py
+│   │       │   └── vit.py
+│   │       └── utils.py
+│   └── util.py
+├── prepare_enhanced_data.py             # （当前不使用）8→5通道预处理与可视化
+├── train_urban_controlnet_enhanced_with_prompt     # 训练入口（带Prompt）
+├── train_urban_controlnet_enhanced_without_prompt  # 训练入口（无Prompt）
+├── inference_with_metrics_single.py     # 单张推理与评估
+├── inference_with_metrics_batch.py      # 批量推理与评估
+├── utils.py                             # 颜色映射、Mask↔RGB、指标、可视化
+├── config.py                            # 全局开关（save_memory）
+├── share.py                             # 共享设置（禁用冗余日志、切片注意力）
+├── ai4city.yaml                         # Conda 环境定义
+└── README.md                            # 项目说明
 ```
-
-3. 运行演示：
-
-```powershell
-python demo_portfolio.py
-```
-
-演示说明
-- 生成一个小型合成 8 通道张量（包含水体、公园、道路、建筑高度等简化模式）。
-- 使用 `visual_tools.Visualizer.visualize_8channel_tensor` 将 8 个通道绘制为 2x4 网格并保存为 PNG。
-- 使用 `MetricsCalculator.calculate_urban_metrics` 计算一组简化的城市指标并在控制台打印结果。
-
-输出文件
-- `portfolio_visuals/demo_8channel.png`: 演示生成的通道可视化图片。
-
-设计说明
-- 本演示刻意避免包含训练代码、模型检查点和大型数据文件，便于公开共享。
-- 如果希望移除 PyTorch 依赖并改写为纯 NumPy 实现，我可以帮你完成迁移以便于在无深度学习环境下发布。
-
-许可与致谢
-- 本文件夹仅提取并重用原始 AI4City 项目的部分辅助工具用于演示，工作区中保留了原始项目副本。
-
-后续支持
-- 我可以将此包打包为单文件 ZIP、生成 GitHub 仓库布局建议，或将 README/示例进一步本地化为中文教程。如需我继续处理，请告诉我你要哪个方向。
